@@ -187,7 +187,7 @@ class HBNBCommand(cmd.Cmd):
                 v.__dict__[my_list[2]] = eval(my_list[3])
             except Exception:
                 v.__dict__[my_list[2]] = my_list[3]
-                v.save()    
+                v.save()
         except SyntaxError:
             print("** class name missing **")
         except NameError:
