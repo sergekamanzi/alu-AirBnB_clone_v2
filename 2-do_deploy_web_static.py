@@ -1,72 +1,49 @@
 #!/usr/bin/python3
-<<<<<<< HEAD
-"""Fabric script that distributes an archive to your web servers"""
-from fabric.api import env, put, run
-from os.path import exists
+# Fabfile to distribute an archive to a web server.
+import os.path
+from fabric.api import env
+from fabric.api import put
+from fabric.api import run
 
-env.hosts = ['54.227.177.156', '54.88.196.86']
-env.user = "ubuntu"
-env.key = "~/.ssh/id_rsa"
-
-
-def do_deploy(archive_path):
-        """Function to distribute an archive to your web servers"""
-            if not exists(archive_path):
-                        return False
-                        try:
-                                    file_name = archive_path.split("/")[-1]
-                                            name = file_name.split(".")[0]
-                                                    path_name = "/data/web_static/releases/" + name
-                                                            put(archive_path, "/tmp/")
-                                                                    run("mkdir -p {}/".format(path_name))
-                                                                            run('tar -xzf /tmp/{} -C {}/'.format(file_name, path_name))
-                                                                                    run("rm /tmp/{}".format(file_name))
-                                                                                            run("mv {}/web_static/* {}".format(path_name, path_name))
-                                                                                                    run("rm -rf {}/web_static".format(path_name))
-                                                                                                            run('rm -rf /data/web_static/current')
-                                                                                                                    run('ln -s {}/ /data/web_static/current'.format(path_name))
-                                                                                                                            return True
-                                                                                                                            except Exception:
-                                                                                                                                        return False
-=======
-"""
-script that distributes an archive to my web servers,
-using the function (do_deploy:)
-"""
-import os
-from fabric.api import put, run, env
-env.hosts = ['34.224.26.174', '18.208.221.76']
+env.hosts = ["54.146.252.71", "50.19.162.195"]
 
 
 def do_deploy(archive_path):
-        """
-            Distribution to my servers
-                """
-                    if archive_path is None or not os.path.exists(archive_path):
-                                return False
-                                try:
-                                            file = archive_path.split("/")[-1]
-                                                    file_name = file.split(".")[0]
-                                                            path = "/data/web_static/releases/"
-                                                                    # upload the archive to the /tmp/ directory of the web server
-                                                                            put(archive_path, "/tmp/")
-                                                                                    # create a folder with the same name as the archive
-                                                                                            # without the extension
-                                                                                                    run("mkdir -p {}{}/".format(path, file_name))
-                                                                                                            # uncompress the archive to the folder
-                                                                                                                    run("tar -xzf /tmp/{} -C {}{}/".format(
-                                                                                                                                    file, path, file_name))
-                                                                                                                            # delete the archive from the web server
-                                                                                                                                    run("rm /tmp/{}".format(file))
-                                                                                                                                            run("mv {0}{1}/web_static/* {0}{1}/".format(path, file_name))
-                                                                                                                                                    # delete the symbolic link /data/web_static/current from the web server
-                                                                                                                                                            run("rm -rf {}{}/web_static".format(path, file_name))
-                                                                                                                                                                    run("rm -rf /data/web_static/current")
-                                                                                                                                                                            # create new symbolic link /data/web_static/current on web server
-                                                                                                                                                                                    # linked to the new version of your code
-                                                                                                                                                                                            run("ln -s {}{}/ /data/web_static/current".
-                                                                                                                                                                                                                format(path, file_name))
-                                                                                                                                                                                                    return True
-                                                                                                                                                                                                    except BaseException:
-                                                                                                                                                                                                                return False
->>>>>>> a717ed48f2df90b26c7fcaf70bc9ab94c06a2385
+    """Distributes an archive to a web server.
+
+    Args:
+        archive_path (str): The path of the archive to distribute.
+    Returns:
+        If the file doesn't exist at archive_path or an error occurs - False.
+        Otherwise - True.
+    """
+    if os.path.isfile(archive_path) is False:
+        return False
+    file = archive_path.split("/")[-1]
+    name = file.split(".")[0]
+
+    if put(archive_path, "/tmp/{}".format(file)).failed is True:
+        return False
+    if run("rm -rf /data/web_static/releases/{}/".
+           format(name)).failed is True:
+        return False
+    if run("mkdir -p /data/web_static/releases/{}/".
+           format(name)).failed is True:
+        return False
+    if run("tar -xzf /tmp/{} -C /data/web_static/releases/{}/".
+           format(file, name)).failed is True:
+        return False
+    if run("rm /tmp/{}".format(file)).failed is True:
+        return False
+    if run("mv /data/web_static/releases/{}/web_static/* "
+           "/data/web_static/releases/{}/".format(name, name)).failed is True:
+        return False
+    if run("rm -rf /data/web_static/releases/{}/web_static".
+           format(name)).failed is True:
+        return False
+    if run("rm -rf /data/web_static/current").failed is True:
+        return False
+    if run("ln -s /data/web_static/releases/{}/ /data/web_static/current".
+           format(name)).failed is True:
+        return False
+    return True
